@@ -10,18 +10,16 @@ func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
 	if root == nil {
 		return nil
 	}
-	if root == p || root == q {
-		return root
-	}
 	left := lowestCommonAncestor(root.Left, p, q)
 	right := lowestCommonAncestor(root.Right, p, q)
-	if left != nil && right != nil {
+	switch {
+	case left != nil && right != nil:
 		return root
-	} else if left != nil && right == nil {
+	case left != nil && right == nil:
 		return left
-	} else if left == nil && right != nil {
+	case left == nil && right != nil:
 		return right
-	} else {
+	default:
 		return nil
 	}
 }
