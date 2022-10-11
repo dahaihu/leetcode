@@ -3,6 +3,7 @@ package reverse_k_group
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 )
 
 type ListNode struct {
@@ -17,7 +18,7 @@ func (l *ListNode) String() string {
 		if cur.Next != nil {
 			buf.WriteString(fmt.Sprintf("%d=>", cur.Val))
 		} else {
-			buf.WriteString(fmt.Sprintf("%d\n", cur.Val))
+			buf.WriteString(strconv.Itoa(cur.Val))
 		}
 		cur = cur.Next
 	}
