@@ -24,7 +24,7 @@ func NewList[K comparable, V any]() *List[K, V] {
 
 func (l *List[K, V]) String() string {
 	buf := bytes.Buffer{}
-	cur := l.Head()
+	cur := l.DummyHead.Next
 	for cur != l.DummyTail {
 		if cur.Next == l.DummyTail {
 			buf.WriteString(fmt.Sprintf("Node(%v, %v)", cur.Key, cur.Value))
