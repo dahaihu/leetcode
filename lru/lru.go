@@ -1,6 +1,9 @@
 package lru
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type LRU[K comparable, V any] struct {
 	Values   map[K]*Node[K, V]
@@ -46,13 +49,15 @@ func (l *LRU[K, V]) Set(key K, value V) {
 	l.add(key, value)
 }
 
-func (l *LRU[K, V]) Get(key K) (v V) {
+var ErrorNotExisted = errors.New("key not exist")
+
+func (l *LRU[K, V]) Get(key K) (v V, err error) {
 	node, existed := l.Values[key]
 	if !existed {
-		return v
+		return v, ErrorNotExisted
 	}
 	l.List.MoveToHead(node)
-	return node.Value
+	return node.Value, nil
 }
 
 func (l *LRU[K, V]) Len() int {
