@@ -1,5 +1,10 @@
 package lru
 
+import (
+	"bytes"
+	"fmt"
+)
+
 type List[K comparable, V any] struct {
 	DummyHead, DummyTail *Node[K, V]
 }
@@ -18,7 +23,17 @@ func NewList[K comparable, V any]() *List[K, V] {
 }
 
 func (l *List[K, V]) String() string {
-	return l.DummyHead.String()
+	buf := bytes.Buffer{}
+	cur := l.Head()
+	for cur != l.DummyTail {
+		if cur.Next == l.DummyTail {
+			buf.WriteString(fmt.Sprintf("Node(%v, %v)", cur.Key, cur.Value))
+		} else {
+			buf.WriteString(fmt.Sprintf("Node(%v, %v)<->", cur.Key, cur.Value))
+		}
+		cur = cur.Next
+	}
+	return buf.String()
 }
 
 func (l *List[K, V]) Remove(n *Node[K, V]) (removed bool) {
