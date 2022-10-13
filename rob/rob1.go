@@ -18,7 +18,10 @@ func rob(nums []int) int {
 	var result int
 	mark := make([]int, 0, len(nums))
 	for i := 0; i < len(nums); i++ {
-		cur := max(nums[i]+getArrayIdx(mark, i-2, 0), getArrayIdx(mark, i-1, 0))
+		cur := max(
+			nums[i]+getArrayIdx(mark, i-2, 0),
+			getArrayIdx(mark, i-1, 0),
+		)
 		if cur > result {
 			result = cur
 		}
