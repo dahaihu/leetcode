@@ -38,8 +38,6 @@ func breakNum(ticks []int) int {
 		times, left := tick/preMargin, tick%preMargin
 		if left == 0 {
 			breakNum += times - 1
-			for i := 0; i < times; i++ {
-			}
 			continue
 		}
 		breakNum += times
