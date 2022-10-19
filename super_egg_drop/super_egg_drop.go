@@ -9,13 +9,6 @@ func max(a, b int) int {
 	return b
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // superEggDrop k egg, n floor
 func superEggDrop(k int, n int) [][]int {
 	mark := make([][]int, k)
