@@ -6,44 +6,60 @@ import (
 )
 
 type Pool struct {
-	queuedJobs   int64
+	requestChan  chan *workRequest
 	workers      []*workerWrapper
-	reqChan      chan workRequest
-	createWorker func() Worker
+	workerCreate func() Worker
+	queuedJobs   int64
 	mutex        sync.Mutex
 }
 
-func New(size int, factory func() Worker) *Pool {
+func New(numWorkers int, workerCreate func() Worker) *Pool {
 	p := &Pool{
-		queuedJobs:   0,
-		workers:      nil,
-		reqChan:      make(chan workRequest),
-		createWorker: factory,
-		mutex:        sync.Mutex{},
+		requestChan:  make(chan *workRequest),
+		workerCreate: workerCreate,
 	}
-	p.SetSize(size)
+	p.SetSize(numWorkers)
 	return p
 }
 
-func NewFunc(size int, f func(interface{}) interface{}) *Pool {
-	return New(size, func() Worker { return &closureWorker{processor: f} })
+func NewFunc(numWorkers int, f func(interface{}) interface{}) *Pool {
+	return New(numWorkers, func() Worker { return &closureWorker{processor: f} })
+}
+
+func (p *Pool) Process(payload interface{}) interface{} {
+	atomic.AddInt64(&p.queuedJobs, 1)
+	defer atomic.AddInt64(&p.queuedJobs, -1)
+
+	request, ok := <-p.requestChan
+	if !ok {
+		panic("pool closed")
+	}
+	request.payloadChan <- payload
+
+	ret, ok := <-request.retChan
+	if !ok {
+		panic("worker closed")
+	}
+	return ret
 }
 
 func (p *Pool) SetSize(size int) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
-	workerLen := len(p.workers)
+
+	length := len(p.workers)
 	switch {
-	case size == workerLen:
-	case size > workerLen:
-		for i := workerLen; i < size; i++ {
-			p.workers = append(p.workers, newWorkerWrapper(p.reqChan, p.createWorker()))
+	case length == size:
+		return
+	case size > length:
+		for i := length; i < size; i++ {
+			p.workers = append(p.workers, newWorkerWrapper(p.requestChan, p.workerCreate()))
 		}
-	case size < workerLen:
-		for i := size; i < workerLen; i++ {
+	case size < length:
+		for i := size; i < length; i++ {
 			p.workers[i].stop()
 		}
-		for i := size; i < workerLen; i++ {
+		for i := size; i < length; i++ {
 			p.workers[i].join()
 			p.workers[i] = nil
 		}
@@ -51,34 +67,26 @@ func (p *Pool) SetSize(size int) {
 	}
 }
 
-func (p *Pool) Process(payload interface{}) interface{} {
-	atomic.AddInt64(&p.queuedJobs, 1)
-	defer atomic.AddInt64(&p.queuedJobs, -1)
+func (p *Pool) QueuedLength() int64 {
+	return atomic.LoadInt64(&p.queuedJobs)
+}
 
-	request, ok := <-p.reqChan
-	if !ok {
-		panic("pool closed")
-	}
+func (p *Pool) Close() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
-	request.PayloadChan <- payload
-
-	response, ok := <-request.RetChan
-	if !ok {
-		panic("worker terminated")
-	}
-	return response
+	p.SetSize(0)
+	close(p.requestChan)
 }
 
 type closureWorker struct {
 	processor func(interface{}) interface{}
 }
 
-func (c *closureWorker) Interrupt() {}
-
-func (c *closureWorker) BlockUntilReady() {}
-
-func (c *closureWorker) Terminate() {}
-
-func (c *closureWorker) Process(in interface{}) interface{} {
-	return c.processor(in)
+func (c *closureWorker) Process(payload interface{}) interface{} {
+	return c.processor(payload)
 }
+
+func (c *closureWorker) Interrupt()       {}
+func (c *closureWorker) BlockUntilReady() {}
+func (c *closureWorker) Terminate()       {}

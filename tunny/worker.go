@@ -8,32 +8,46 @@ type Worker interface {
 }
 
 type workRequest struct {
-	PayloadChan chan interface{}
-	RetChan     chan interface{}
-	Interrupt   func()
+	payloadChan chan interface{}
+	retChan     chan interface{}
+	interrupt   func()
 }
 
 type workerWrapper struct {
-	reqChan       chan<- workRequest
+	requestChan   chan *workRequest
 	worker        Worker
 	interruptChan chan struct{}
 	closeChan     chan struct{}
 	closedChan    chan struct{}
 }
 
-func newWorkerWrapper(reqChan chan<- workRequest, worker Worker) *workerWrapper {
+func newWorkerWrapper(reqChan chan *workRequest, worker Worker) *workerWrapper {
 	w := &workerWrapper{
-		reqChan:       reqChan,
+		requestChan:   reqChan,
 		worker:        worker,
 		interruptChan: make(chan struct{}),
 		closeChan:     make(chan struct{}),
 		closedChan:    make(chan struct{}),
 	}
-	go w.run()
+	go w.work()
 	return w
 }
 
-func (w *workerWrapper) run() {
+func (w *workerWrapper) interrupt() {
+	w.worker.Interrupt()
+	close(w.interruptChan)
+}
+
+func (w *workerWrapper) stop() {
+	w.worker.Terminate()
+	close(w.closeChan)
+}
+
+func (w *workerWrapper) join() {
+	<-w.closedChan
+}
+
+func (w *workerWrapper) work() {
 	payloadChan, retChan := make(chan interface{}), make(chan interface{})
 	defer func() {
 		w.worker.Terminate()
@@ -43,10 +57,10 @@ func (w *workerWrapper) run() {
 	for {
 		w.worker.BlockUntilReady()
 		select {
-		case w.reqChan <- workRequest{
-			PayloadChan: payloadChan,
-			RetChan:     retChan,
-			Interrupt:   w.interrupt,
+		case w.requestChan <- &workRequest{
+			payloadChan: payloadChan,
+			retChan:     retChan,
+			interrupt:   w.interrupt,
 		}:
 			select {
 			case payload := <-payloadChan:
@@ -63,17 +77,4 @@ func (w *workerWrapper) run() {
 			return
 		}
 	}
-}
-
-func (w *workerWrapper) interrupt() {
-	w.worker.Interrupt()
-	close(w.interruptChan)
-}
-
-func (w *workerWrapper) stop() {
-	close(w.closeChan)
-}
-
-func (w *workerWrapper) join() {
-	<-w.closedChan
 }
