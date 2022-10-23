@@ -77,6 +77,7 @@ func (t *RBTree) String() string {
 	lines, _, _, _ := buildTree(t.Root)
 	return strings.Join(lines, "\n")
 }
+
 func (t *RBTree) Set(key, value interface{}) {
 	if t.Root == nil {
 		t.Root = &RBNode{Key: key, Value: value, Parent: nil, color: black}
@@ -109,33 +110,6 @@ func (t *RBTree) Set(key, value interface{}) {
 	}
 	t.insertCase1(node)
 	t.size += 1
-}
-
-func (t *RBTree) insertCase1(n *RBNode) {
-	if n.Parent == nil {
-		n.color = black
-		return
-	}
-	t.insertCase2(n)
-}
-
-func (t *RBTree) insertCase2(n *RBNode) {
-	if n.Parent.color == black {
-		return
-	}
-	t.insertCase3(n)
-}
-
-func (t *RBTree) insertCase3(n *RBNode) {
-	if uncle := n.uncle(); uncle != nil && uncle.color == red {
-		n.Parent.color = black
-		uncle.color = black
-		grandparent := n.grandparent()
-		grandparent.color = red
-		t.insertCase1(grandparent)
-		return
-	}
-	t.insertCase4(n)
 }
 
 func (t *RBTree) rotateRight(n *RBNode) {
@@ -185,6 +159,33 @@ func (n *RBNode) setRight(right *RBNode) {
 	if right != nil {
 		right.Parent = n
 	}
+}
+
+func (t *RBTree) insertCase1(n *RBNode) {
+	if n.Parent == nil {
+		n.color = black
+		return
+	}
+	t.insertCase2(n)
+}
+
+func (t *RBTree) insertCase2(n *RBNode) {
+	if n.Parent.color == black {
+		return
+	}
+	t.insertCase3(n)
+}
+
+func (t *RBTree) insertCase3(n *RBNode) {
+	if uncle := n.uncle(); uncle.getColor() == red {
+		n.Parent.color = black
+		uncle.color = black
+		grandparent := n.grandparent()
+		grandparent.color = red
+		t.insertCase1(grandparent)
+		return
+	}
+	t.insertCase4(n)
 }
 
 func (t *RBTree) insertCase4(n *RBNode) {

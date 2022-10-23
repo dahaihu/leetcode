@@ -5,9 +5,20 @@ import "strings"
 type INode interface {
 	IsNil() bool
 	String() string
-	Len() int
 	LeftChild() INode
 	RightChild() INode
+}
+
+func midIndex(start, end int, leftBox bool) int {
+	totalCount := end - start + 1
+	count, remainder := totalCount/2, totalCount%2
+	if remainder == 1 {
+		return start + count
+	}
+	if leftBox {
+		return start + count
+	}
+	return start + count - 1
 }
 
 func buildTree(node INode) (
@@ -18,8 +29,8 @@ func buildTree(node INode) (
 	}
 
 	rootStr := node.String()
-	rootWidth := node.Len()
-	gapSize := node.Len()
+	rootWidth := len(rootStr)
+	gapSize := len(rootStr)
 
 	leftBox, leftBoxLength, leftRootStart, leftRootEnd := buildTree(node.LeftChild())
 	rightBox, rightBoxLength, rightRootStart, rightRootEnd := buildTree(node.RightChild())
@@ -27,7 +38,7 @@ func buildTree(node INode) (
 		line1, line2 []string
 	)
 	if leftBoxLength > 0 {
-		leftRootIndex := (leftRootStart+leftRootEnd)/2 + 1
+		leftRootIndex := midIndex(leftRootStart, leftRootEnd, true)
 		line1 = append(line1, strings.Repeat(" ", leftRootIndex+1))
 		line1 = append(line1, strings.Repeat("_", leftBoxLength-leftRootIndex))
 		line2 = append(line2, strings.Repeat(" ", leftRootIndex)+"/")
@@ -40,11 +51,11 @@ func buildTree(node INode) (
 	line1 = append(line1, rootStr)
 	line2 = append(line2, strings.Repeat(" ", rootWidth))
 	if rightBoxLength > 0 {
-		rightRootIndex := (rightRootStart + rightRootEnd) / 2
-		line1 = append(line1, strings.Repeat("_", rightRootIndex))
+		rightRootIndex := midIndex(rightRootStart, rightRootEnd, false)
+		line1 = append(line1, strings.Repeat("_", rightRootIndex+1))
 		line1 = append(line1, strings.Repeat(" ",
 			rightBoxLength-rightRootIndex+1))
-		line2 = append(line2, strings.Repeat(" ", rightRootIndex)+"\\")
+		line2 = append(line2, strings.Repeat(" ", rightRootIndex+1)+"\\")
 		line2 = append(line2, strings.Repeat(" ",
 			rightBoxLength-rightRootIndex))
 		gapSize++

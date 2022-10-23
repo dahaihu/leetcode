@@ -18,19 +18,20 @@ func Test_rbTree(t *testing.T) {
 	}}
 	for i := 0; i < 10; i++ {
 		rbTree.Set(i, i)
-		fmt.Println(rbTree)
-		fmt.Println(rbTree.size)
+		//fmt.Println(rbTree.size)
 	}
 	fmt.Println(rbTree)
-	rbTree.Remove(9)
-	fmt.Println(rbTree)
-	rbTree.Remove(4)
-	fmt.Println(rbTree)
-	rbTree.Remove(7)
-	fmt.Println(rbTree)
-	rbTree.Remove(3)
-	fmt.Println(rbTree)
-	fmt.Println(rbTree.size)
+
+	//fmt.Println(rbTree)
+	//rbTree.Remove(9)
+	//fmt.Println(rbTree)
+	//rbTree.Remove(4)
+	//fmt.Println(rbTree)
+	//rbTree.Remove(7)
+	//fmt.Println(rbTree)
+	//rbTree.Remove(3)
+	//fmt.Println(rbTree)
+	//fmt.Println(rbTree.size)
 }
 
 func Test_colorPrint(t *testing.T) {
