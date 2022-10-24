@@ -6,5 +6,5 @@ import (
 )
 
 func Test_breakNum(t *testing.T) {
-	fmt.Println(breakNum([]int{9, 1}))
+	fmt.Println(breakNum([]int{3, 13, 60, 7}))
 }
