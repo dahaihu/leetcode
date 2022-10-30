@@ -4,7 +4,7 @@ import (
 	"sort"
 )
 
-// low...high
+// []int{low...high}
 func int2array(num int) []int {
 	var items []int
 	for num != 0 {
@@ -15,56 +15,50 @@ func int2array(num int) []int {
 }
 
 func nextNumber(candidates []int, target int) int {
-	sort.Ints(candidates)
-	minCandidate, maxCandidate := candidates[0], candidates[len(candidates)-1]
-	maxCandidateIdx := len(candidates) - 1
+	sort.Slice(candidates, func(i, j int) bool { return candidates[i] <= candidates[j] })
+	maxCandidateIndex := len(candidates) - 1
 	targetItems := int2array(target)
-	var resultIndex []int
+	var resultIndexs []int
 	for i := len(targetItems) - 1; i >= 0; i-- {
-		if num := targetItems[i]; num < minCandidate {
-			preIdx := -1
-			for j := len(resultIndex) - 1; j >= 0; j-- {
-				if resultIndex[j] > 0 {
-					preIdx = j
+		item := targetItems[i]
+		itemIdx := sort.Search(len(candidates), func(j int) bool { return item <= candidates[j] })
+		if itemIdx < len(candidates) && candidates[itemIdx] == item {
+			resultIndexs = append(resultIndexs, itemIdx)
+			continue
+		}
+		if itemIdx == 0 {
+			preSuitedIdx := -1
+			for j := len(resultIndexs) - 1; j >= 0; j-- {
+				if resultIndexs[j] > 0 {
+					preSuitedIdx = j
 					break
 				}
 			}
-			if preIdx == -1 {
-				resultIndex = make([]int, len(targetItems)-1)
-				for j := 0; j < len(targetItems)-1; j++ {
-					resultIndex[j] = maxCandidateIdx
-				}
-			} else {
-				resultIndex[preIdx] = resultIndex[preIdx] - 1
-				for j := preIdx + 1; j < len(resultIndex); j++ {
-					resultIndex[j] = maxCandidateIdx
+			if preSuitedIdx != -1 {
+				resultIndexs[preSuitedIdx] = resultIndexs[preSuitedIdx] - 1
+				for j := preSuitedIdx; j < len(resultIndexs); j++ {
+					resultIndexs[j] = maxCandidateIndex
 				}
 				for j := i; j >= 0; j-- {
-					resultIndex = append(resultIndex, maxCandidateIdx)
+					resultIndexs = append(resultIndexs, maxCandidateIndex)
+				}
+			} else {
+				resultIndexs = make([]int, len(targetItems)-1)
+				for j := 0; j < len(resultIndexs); j++ {
+					resultIndexs[j] = maxCandidateIndex
 				}
 			}
-			break
-		} else if num > maxCandidate {
-			for j := i; j >= 0; j-- {
-				resultIndex = append(resultIndex, maxCandidateIdx)
-			}
-			break
 		} else {
-			idx := sort.Search(len(candidates), func(j int) bool { return num <= candidates[j] })
-			if candidates[idx] == num {
-				resultIndex = append(resultIndex, idx)
-				continue
-			}
-			resultIndex = append(resultIndex, idx-1)
+			resultIndexs = append(resultIndexs, itemIdx-1)
 			for j := i - 1; j >= 0; j-- {
-				resultIndex = append(resultIndex, len(candidates)-1)
+				resultIndexs = append(resultIndexs, maxCandidateIndex)
 			}
-			break
 		}
+		break
 	}
-	var res int
-	for i := 0; i < len(resultIndex); i++ {
-		res = res*10 + candidates[resultIndex[i]]
+	var result int
+	for _, index := range resultIndexs {
+		result = 10*result + candidates[index]
 	}
-	return res
+	return result
 }
