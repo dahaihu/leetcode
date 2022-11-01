@@ -15,8 +15,8 @@ func demo() (interface{}, error) {
 func Test_singleFlight(t *testing.T) {
 	g := new(Group)
 	var w sync.WaitGroup
-	w.Add(10)
 	for i := 0; i < 10; i++ {
+		w.Add(1)
 		go func(idx int) {
 			defer w.Done()
 			fmt.Printf("start process %d\n", idx)
