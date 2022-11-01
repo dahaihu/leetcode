@@ -24,6 +24,28 @@ func (n *RBNode) String() string {
 	return fmt.Sprintf("<%v:%v:%v>", n.Key, n.Value, n.color)
 }
 
+func (n *RBNode) rightAdjacent() *RBNode {
+	if n.Right != nil {
+		cur := n.Right
+		for cur.Left != nil {
+			cur = cur.Left
+		}
+		return cur
+	}
+	if n.Parent == nil {
+		return nil
+	}
+	if n == n.Parent.Left {
+		return n.Parent
+	} else {
+		cur := n.Parent
+		for cur.Parent != nil && cur == cur.Parent.Right {
+			cur = cur.Parent
+		}
+		return cur.Parent
+	}
+}
+
 func (n *RBNode) Len() int {
 	if n == nil {
 		return 0
@@ -74,7 +96,7 @@ type RBTree struct {
 }
 
 func (t *RBTree) String() string {
-	lines, _, _, _ := buildTree(t.Root)
+	lines, _, _, _ := BuildTree(t.Root)
 	return strings.Join(lines, "\n")
 }
 

@@ -38,7 +38,7 @@ func trapRainWater(heightMap [][]int) int {
 	for i := 0; i < xLen; i++ {
 		for j := 0; j < yLen; j++ {
 			if i == 0 || j == 0 || i == xLen-1 || j == yLen-1 {
-				heap.Push(&q, []int{i, j})
+				heap.Push(&q, []int{i, j, heightMap[i][j]})
 				visited[[2]int{i, j}] = true
 			}
 		}

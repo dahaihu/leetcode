@@ -21,19 +21,18 @@ func midIndex(start, end int, leftBox bool) int {
 	return start + count - 1
 }
 
-func buildTree(node INode) (
+func BuildTree(node INode) (
 	box []string, boxLength, rootStart, rootEnd int,
 ) {
 	if node.IsNil() {
 		return nil, 0, 0, 0
 	}
-
 	rootStr := node.String()
 	rootWidth := len(rootStr)
 	gapSize := len(rootStr)
 
-	leftBox, leftBoxLength, leftRootStart, leftRootEnd := buildTree(node.LeftChild())
-	rightBox, rightBoxLength, rightRootStart, rightRootEnd := buildTree(node.RightChild())
+	leftBox, leftBoxLength, leftRootStart, leftRootEnd := BuildTree(node.LeftChild())
+	rightBox, rightBoxLength, rightRootStart, rightRootEnd := BuildTree(node.RightChild())
 	var (
 		line1, line2 []string
 	)

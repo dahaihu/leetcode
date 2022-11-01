@@ -28,5 +28,5 @@ func canPartition(nums []int) bool {
 			}
 		}
 	}
-	return mark[target][len(nums)-1]
+	return mark[target-1][len(nums)-1]
 }
