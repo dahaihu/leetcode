@@ -5,8 +5,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"golang.org/x/sync/singleflight"
 )
 
 func demo() (interface{}, error) {
@@ -15,7 +13,7 @@ func demo() (interface{}, error) {
 }
 
 func Test_singleFlight(t *testing.T) {
-	g := new(singleflight.Group)
+	g := new(Group)
 	var w sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		w.Add(1)
