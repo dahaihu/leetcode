@@ -8,24 +8,25 @@ import (
 func CondCyclePrint(times int, k int) {
 	cond := sync.NewCond(&sync.Mutex{})
 	var (
-		t int
-		w sync.WaitGroup
+		val int
+		wg  sync.WaitGroup
 	)
-	w.Add(k)
 	for i := 0; i < k; i++ {
-		go func(printValue int) {
-			defer w.Done()
-			for i := 0; i < times; i++ {
+		wg.Add(1)
+		i := i
+		go func() {
+			defer wg.Done()
+			for time := 0; time < times; time++ {
 				cond.L.Lock()
-				for t != printValue {
+				for val%k != i {
 					cond.Wait()
 				}
-				fmt.Printf("%d_%d\n", i, printValue)
-				t = (t + 1) % k
+				fmt.Printf("worker %d print %d\n", i, val)
+				val += 1
 				cond.Broadcast()
 				cond.L.Unlock()
 			}
-		}(i)
+		}()
 	}
-	w.Wait()
+	wg.Wait()
 }
