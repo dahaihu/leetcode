@@ -8,23 +8,23 @@ import (
 
 type waiter struct {
 	n     int64
-	ready chan<- struct{}
+	ready chan struct{}
 }
 
 type Weighted struct {
-	size    int64
-	cur     int64
-	mu      sync.Mutex
-	waiters list.List
+	mu   sync.Mutex
+	list list.List
+	cur  int64
+	size int64
 }
 
-func NewWeighted(n int64) *Weighted {
-	return &Weighted{size: n}
+func NewWeighted(weighted int64) *Weighted {
+	return &Weighted{size: weighted}
 }
 
 func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 	s.mu.Lock()
-	if s.size-s.cur >= n && s.waiters.Len() == 0 {
+	if s.availableCapacity() >= n && s.list.Len() == 0 {
 		s.cur += n
 		s.mu.Unlock()
 		return nil
@@ -36,7 +36,7 @@ func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 	}
 	ready := make(chan struct{})
 	w := waiter{n: n, ready: ready}
-	elem := s.waiters.PushBack(w)
+	elem := s.list.PushBack(w)
 	s.mu.Unlock()
 
 	select {
@@ -49,10 +49,10 @@ func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 		case <-ready:
 			err = nil
 		default:
-			isFront := s.waiters.Front() == elem
-			s.waiters.Remove(elem)
-			if isFront && s.size > s.cur {
-				s.notifyWaiters()
+			isFront := s.list.Front() == elem
+			s.list.Remove(elem)
+			if isFront && s.availableCapacity() > 0 {
+				s.notify()
 			}
 		}
 		s.mu.Unlock()
@@ -62,27 +62,31 @@ func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 
 func (s *Weighted) Release(n int64) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.cur -= n
 	if s.cur < 0 {
-		s.mu.Unlock()
-		panic("semaphore: release more than held")
+		panic("semaphore: released more than held")
 	}
-	s.notifyWaiters()
-	s.mu.Unlock()
+	s.notify()
 }
 
-func (s *Weighted) notifyWaiters() {
+func (s *Weighted) notify() {
 	for {
-		next := s.waiters.Front()
-		if next == nil {
+		front := s.list.Front()
+		if front == nil {
 			break
 		}
-		w := next.Value.(waiter)
-		if s.size-s.cur < w.n {
+		waiter := front.Value.(waiter)
+		if s.size-s.cur < waiter.n {
 			break
 		}
-		s.cur += w.n
-		s.waiters.Remove(next)
-		close(w.ready)
+		s.list.Remove(front)
+		s.cur += waiter.n
+		close(waiter.ready)
 	}
+}
+
+func (s *Weighted) availableCapacity() int64 {
+	return s.size - s.cur
 }
