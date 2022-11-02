@@ -7,8 +7,8 @@ import (
 )
 
 type waiter struct {
-	n     int64
-	ready chan struct{}
+	tickets int64
+	ready   chan struct{}
 }
 
 type Weighted struct {
@@ -22,20 +22,20 @@ func NewWeighted(weighted int64) *Weighted {
 	return &Weighted{size: weighted}
 }
 
-func (s *Weighted) Acquire(ctx context.Context, n int64) error {
+func (s *Weighted) Acquire(ctx context.Context, tickets int64) error {
 	s.mu.Lock()
-	if s.availableCapacity() >= n && s.list.Len() == 0 {
-		s.cur += n
+	if s.tickets() >= tickets && s.list.Len() == 0 {
+		s.cur += tickets
 		s.mu.Unlock()
 		return nil
 	}
-	if n > s.size {
+	if tickets > s.size {
 		s.mu.Unlock()
 		<-ctx.Done()
 		return ctx.Err()
 	}
 	ready := make(chan struct{})
-	w := waiter{n: n, ready: ready}
+	w := waiter{tickets: tickets, ready: ready}
 	elem := s.list.PushBack(w)
 	s.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 		default:
 			isFront := s.list.Front() == elem
 			s.list.Remove(elem)
-			if isFront && s.availableCapacity() > 0 {
+			if isFront && s.tickets() > 0 {
 				s.notify()
 			}
 		}
@@ -60,11 +60,11 @@ func (s *Weighted) Acquire(ctx context.Context, n int64) error {
 	}
 }
 
-func (s *Weighted) Release(n int64) {
+func (s *Weighted) Release(tickets int64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.cur -= n
+	s.cur -= tickets
 	if s.cur < 0 {
 		panic("semaphore: released more than held")
 	}
@@ -78,15 +78,15 @@ func (s *Weighted) notify() {
 			break
 		}
 		waiter := front.Value.(waiter)
-		if s.size-s.cur < waiter.n {
+		if s.size-s.cur < waiter.tickets {
 			break
 		}
 		s.list.Remove(front)
-		s.cur += waiter.n
+		s.cur += waiter.tickets
 		close(waiter.ready)
 	}
 }
 
-func (s *Weighted) availableCapacity() int64 {
+func (s *Weighted) tickets() int64 {
 	return s.size - s.cur
 }
