@@ -1,25 +1,33 @@
 package err_group
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/pkg/errors"
 )
 
 func Test_errGroup(t *testing.T) {
-	g := New(4)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*1000)
+	defer cancel()
+	g := New(ctx, 3)
 	var urls = []string{
-		"http://liangyaopei.github.io/",
-		"http://www.51cto.com/",
-		"http://www.baidu.com/",
+		"http://liangyaopei.github.io",
+		"http://www.51cto.com",
+		"http://www.baidu.com",
 	}
 	for _, url := range urls {
 		url := url
-		g.Go(func() error {
-			resp, err := http.Get(url)
+		g.Go(func(ctx context.Context) error {
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			if err != nil {
+				return err
+			}
+			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				return err
 			}

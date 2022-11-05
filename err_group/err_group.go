@@ -1,30 +1,31 @@
 package err_group
 
 import (
+	"context"
 	"sync"
 )
 
 var token = struct{}{}
 
 type Group struct {
-	err     error
-	errOnce sync.Once
-	wg      sync.WaitGroup
-	sema    chan struct{}
+	sema   chan struct{}
+	wg     sync.WaitGroup
+	err    error
+	once   sync.Once
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
-// New create err group with limited concurrency. when limited is less than 1,
-// it is unlimited with active goroutine. Otherwise the most active goroutine
-// number is concurrency
-func New(concurrency int) *Group {
-	g := new(Group)
-	if concurrency > 0 {
-		g.sema = make(chan struct{}, concurrency)
+func New(ctx context.Context, limited int64) *Group {
+	g := &Group{}
+	if limited > 0 {
+		g.sema = make(chan struct{}, limited)
 	}
+	g.ctx, g.cancel = context.WithCancel(ctx)
 	return g
 }
 
-func (g *Group) Go(f func() error) {
+func (g *Group) Go(f func(context.Context) error) {
 	g.wg.Add(1)
 	go func() {
 		defer func() {
@@ -36,9 +37,10 @@ func (g *Group) Go(f func() error) {
 		if g.sema != nil {
 			g.sema <- token
 		}
-		if err := f(); err != nil {
-			g.errOnce.Do(func() {
+		if err := f(g.ctx); err != nil {
+			g.once.Do(func() {
 				g.err = err
+				g.cancel()
 			})
 		}
 	}()
@@ -46,5 +48,7 @@ func (g *Group) Go(f func() error) {
 
 func (g *Group) Wait() error {
 	g.wg.Wait()
+	// cancel can be duplidatedly canceled
+	g.cancel()
 	return g.err
 }
