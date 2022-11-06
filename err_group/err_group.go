@@ -48,7 +48,7 @@ func (g *Group) Go(f func(context.Context) error) {
 
 func (g *Group) Wait() error {
 	g.wg.Wait()
-	// cancel can be duplidatedly canceled
+	// cancel can be repeatedly canceled
 	g.cancel()
 	return g.err
 }
