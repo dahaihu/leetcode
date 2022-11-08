@@ -27,7 +27,8 @@ func Cluster(nums [][]int) [][]int {
 		child, parent := num[0], num[1]
 		childAncestor := findAncestor(parents, child)
 		parentAncestor := findAncestor(parents, parent)
-		clusters[parentAncestor] = append(clusters[parentAncestor], clusters[childAncestor]...)
+		clusters[parentAncestor] = append(
+			clusters[parentAncestor], clusters[childAncestor]...)
 		delete(clusters, childAncestor)
 		parents[childAncestor] = parentAncestor
 	}

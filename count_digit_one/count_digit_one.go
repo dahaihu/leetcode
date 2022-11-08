@@ -1,8 +1,7 @@
 package countdigitone
 
 func countDigitOne(n int) int {
-	cur := 1
-	count := 0
+	count, cur := 0, 1
 	for cur <= n {
 		left, val, right := n/(10*cur), (n/cur)%10, n%cur
 		switch {
