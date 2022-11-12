@@ -1,6 +1,7 @@
 package cycle_print
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -15,18 +16,20 @@ func CondCyclePrint(workers int, target int) {
 		i := i
 		go func() {
 			defer wg.Done()
-			for {
+			loop := true
+			for loop {
 				cond.L.Lock()
 				for val%workers != i {
 					cond.Wait()
 				}
-				// fmt.Printf("worker %d print %d\n", i, val)
+				if val < target {
+					fmt.Printf("worker %d print %d\n", i, val)
+				} else {
+					loop = false
+				}
 				val += 1
 				cond.Broadcast()
 				cond.L.Unlock()
-				if val >= target {
-					break
-				}
 			}
 		}()
 	}
