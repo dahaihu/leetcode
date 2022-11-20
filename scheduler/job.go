@@ -42,7 +42,7 @@ func (j *JobWrapper) Removed() bool {
 	return j.removed.Load()
 }
 
-// newJobWrapper, create a job from IJob
-func newJobWrapper(job IJob) *JobWrapper {
+// NewJobWrapper, create a job from IJob
+func NewJobWrapper(job IJob) *JobWrapper {
 	return &JobWrapper{job: job}
 }

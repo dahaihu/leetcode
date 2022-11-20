@@ -43,7 +43,7 @@ func Test_priorityQueue(t *testing.T) {
 	nums := shuffle(0, count)
 	for _, num := range nums {
 		num := num
-		Push(queue, newJobWrapper(&demoJob{
+		Push(queue, NewJobWrapper(&demoJob{
 			name:        strconv.Itoa(num),
 			executeTime: num,
 		}))

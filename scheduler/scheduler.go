@@ -42,7 +42,7 @@ func (s *Scheduler) Push(job IJob) (jw *JobWrapper) {
 	default:
 	}
 
-	jw = newJobWrapper(job)
+	jw = NewJobWrapper(job)
 
 	s.mutex.Lock()
 	Push(&s.priorityQueue, jw)
