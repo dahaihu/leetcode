@@ -22,9 +22,14 @@ type Scheduler struct {
 	waitingCount  atomic.Int64
 }
 
+// NewSchuduler create a scheduler to schedule job
 func NewSchduler(concurrency int, duration time.Duration, now func() int64) *Scheduler {
+	var concurrencyCh chan struct{}
+	if concurrency > 0 {
+		concurrencyCh = make(chan struct{}, concurrency)
+	}
 	s := &Scheduler{
-		concurrency: make(chan struct{}, concurrency),
+		concurrency: concurrencyCh,
 		closedChan:  make(chan struct{}),
 		closeChan:   make(chan struct{}),
 		resume:      make(chan struct{}),
@@ -34,6 +39,7 @@ func NewSchduler(concurrency int, duration time.Duration, now func() int64) *Sch
 	return s
 }
 
+// Push pushes the job to the scheduler. when sheduler stopped, it panics
 func (s *Scheduler) Push(job IJob) (jw *JobWrapper) {
 	// check scheduler stopped
 	select {
@@ -48,17 +54,22 @@ func (s *Scheduler) Push(job IJob) (jw *JobWrapper) {
 	Push(&s.priorityQueue, jw)
 	s.mutex.Unlock()
 
+	// signal to dispatch, let dispatch know that new max priority job arrives
 	if jw.Index() == 0 {
 		select {
 		case s.resume <- token:
 		default:
 		}
 	}
+
 	return jw
 }
 
+// Stop stops the scheduler, use f to process the unprocessed job
 func (s *Scheduler) Stop(f func(IJob)) {
+	// signal to dispatch, let dispatch know that scheduler stopped
 	close(s.closeChan)
+	// wait for dispatch goroutine terminated
 	<-s.closedChan
 
 	if f != nil {
@@ -73,6 +84,11 @@ func (s *Scheduler) Init(jobs ...IJob) {
 	for _, job := range jobs {
 		s.Push(job)
 	}
+}
+
+// PendingJobNum returns the job number which should execute now but block for concurrency limit
+func (s *Scheduler) PendingJobNum() int64 {
+	return s.waitingCount.Load()
 }
 
 func (s *Scheduler) wait(gap int64) (shouldContinue bool) {
@@ -94,7 +110,7 @@ func (s *Scheduler) dispatch() {
 	}()
 
 	for {
-		jw := s.FirstJob()
+		jw := s.nextJob()
 		if jw == nil {
 			select {
 			case <-s.resume:
@@ -103,20 +119,25 @@ func (s *Scheduler) dispatch() {
 				return
 			}
 		}
+		// job was removed, just pop job from heap is ok
 		if removed := jw.Removed(); removed {
+			s.pop(jw)
 			continue
 		}
 		now := s.now()
 		gap := jw.job.ExecuteTime() - now
 		log.Printf("now %d, executeTime %d,  encounter gap %+v", now, jw.job.ExecuteTime(), gap)
 		if gap <= 0 {
+			// job should do now
 			if removed := s.pop(jw); !removed {
 				s.run(jw.job)
 			}
 			continue
-		}
-		if shouldContinue := s.wait(gap); !shouldContinue {
-			break
+		} else {
+			// gap > 0, wait for gap elapse or new max priority job arrives or scheduler stopped
+			if shouldContinue := s.wait(gap); !shouldContinue {
+				break
+			}
 		}
 	}
 }
@@ -125,13 +146,22 @@ func (s *Scheduler) run(job IJob) {
 	s.waitingCount.Add(1)
 	defer s.waitingCount.Add(-1)
 
-	s.concurrency <- token
+	if s.concurrency != nil {
+		s.concurrency <- token
+	}
+
 	go func() {
-		defer func() { <-s.concurrency }()
+		defer func() {
+			if s.concurrency != nil {
+				<-s.concurrency
+			}
+		}()
+
 		job.Do()
 	}()
 }
 
+// pop remove wrapped job from priority queue
 func (s *Scheduler) pop(wrapped *JobWrapper) (deleted bool) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -140,7 +170,8 @@ func (s *Scheduler) pop(wrapped *JobWrapper) (deleted bool) {
 	return wrapped.Removed()
 }
 
-func (s *Scheduler) FirstJob() *JobWrapper {
+// nextJob returns the max priority job, if empty returns nil
+func (s *Scheduler) nextJob() *JobWrapper {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -149,8 +180,4 @@ func (s *Scheduler) FirstJob() *JobWrapper {
 		return nil
 	}
 	return job.(*JobWrapper)
-}
-
-func (s *Scheduler) PendingJob() int64 {
-	return s.waitingCount.Load()
 }
