@@ -25,21 +25,21 @@ package break_num
 */
 
 func breakNum(ticks []int) int {
-	preMargin := ticks[len(ticks)-1]
-	times := 0
+	var times int
+	nextTick := ticks[len(ticks)-1]
 	for i := len(ticks) - 2; i >= 0; i-- {
-		tick := ticks[i]
-		if tick <= preMargin {
-			preMargin = tick
+		curTick := ticks[i]
+		if curTick <= nextTick {
+			nextTick = curTick
 			continue
 		}
-		curTimes, remainder := tick/preMargin, tick%preMargin
+		division, remainder := curTick/nextTick, curTick%nextTick
 		if remainder == 0 {
-			times += curTimes - 1
+			times += division - 1
 			continue
 		}
-		times += curTimes
-		preMargin = tick / (curTimes + 1)
+		times += division
+		nextTick = curTick / (division + 1)
 	}
 	return times
 }
