@@ -29,5 +29,14 @@ func maxThreeAppearTimes(values []string) []string {
 			}
 		}
 	}
+	if a == "" {
+		return []string{}
+	}
+	if b == "" {
+		return []string{a}
+	}
+	if c == "" {
+		return []string{a, b}
+	}
 	return []string{a, b, c}
 }

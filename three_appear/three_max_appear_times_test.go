@@ -6,5 +6,5 @@ import (
 )
 
 func Test_threeAppearTimes(t *testing.T) {
-	fmt.Println(maxThreeAppearTimes([]string{"a", "c", "b", "d", "a", "e", "e"}))
+	fmt.Println(maxThreeAppearTimes([]string{"a", "c", "a", "c"}))
 }
