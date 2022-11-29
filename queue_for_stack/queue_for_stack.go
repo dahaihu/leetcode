@@ -4,12 +4,12 @@ type Queue[T any] struct {
 	elements []T
 }
 
-func (q *Queue[T]) Push(ele T) {
+func (q *Queue[T]) push(ele T) {
 	q.elements = append(q.elements, ele)
 }
 
-func (q *Queue[T]) Pop() (t T) {
-	if q.Empty() {
+func (q *Queue[T]) pop() (t T) {
+	if q.empty() {
 		return
 	}
 	t = q.elements[0]
@@ -17,35 +17,35 @@ func (q *Queue[T]) Pop() (t T) {
 	return
 }
 
-func (q *Queue[T]) Len() int {
+func (q *Queue[T]) len() int {
 	return len(q.elements)
 }
 
-func (q *Queue[T]) Empty() bool {
-	return q.Len() == 0
+func (q *Queue[T]) empty() bool {
+	return q.len() == 0
 }
 
-type Stack[T any] struct {
+type queueStack[T any] struct {
 	use  Queue[T]
 	help Queue[T]
 }
 
-func (s *Stack[T]) Push(t T) {
-	if s.use.Empty() {
-		s.use.Push(t)
+func (s *queueStack[T]) push(t T) {
+	if s.use.empty() {
+		s.use.push(t)
 		return
 	}
-	s.help.Push(t)
-	for !s.use.Empty() {
-		s.help.Push(s.use.Pop())
+	s.help.push(t)
+	for !s.use.empty() {
+		s.help.push(s.use.pop())
 	}
 	s.use, s.help = s.help, s.use
 }
 
-func (s *Stack[T]) Pop() T {
-	return s.use.Pop()
+func (s *queueStack[T]) pop() T {
+	return s.use.pop()
 }
 
-func (s *Stack[T]) Empty() bool {
-	return s.use.Empty()
+func (s *queueStack[T]) empty() bool {
+	return s.use.empty()
 }
