@@ -15,7 +15,7 @@ func abs(a int) int {
 	return -a
 }
 
-func sortedPow(nums []int) []int {
+func sorted2powSorted(nums []int) []int {
 	left, right := 0, len(nums)-1
 	for left < right {
 		if nums[left] >= 0 {
