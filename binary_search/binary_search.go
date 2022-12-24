@@ -37,3 +37,22 @@ func search(nums []int, target int) bool {
 
 	return false
 }
+
+func binaryConvertedMin(nums []int) int {
+	left, right := 0, len(nums)-1
+	for left < right {
+		if left+1 == right {
+			if nums[left] > nums[right] {
+				return nums[right]
+			}
+			return nums[0]
+		}
+		mid := (right-left)/2 + left
+		if nums[left] <= nums[mid] {
+			left = mid
+		} else {
+			right = mid
+		}
+	}
+	return nums[0]
+}

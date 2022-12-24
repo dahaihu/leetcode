@@ -39,8 +39,8 @@ func arrayValue(nums []int, idx int, defaultValue int) int {
 }
 
 func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
-	m, n := len(nums1), len(nums2)
-	if m > n {
+	nums1Len, nums2Len := len(nums1), len(nums2)
+	if nums1Len > nums2Len {
 		return findMedianSortedArrays(nums2, nums1)
 	}
 	nums1Mid, nums2Mid := splitArrays(nums1, nums2)
@@ -48,7 +48,7 @@ func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
 		arrayValue(nums1, nums1Mid, math.MaxInt64),
 		arrayValue(nums2, nums2Mid, math.MaxInt64),
 	)
-	if (m+n)%2 == 1 {
+	if (nums1Len+nums2Len)%2 == 1 {
 		return float64(rightMargin)
 	}
 	leftMargin := max(

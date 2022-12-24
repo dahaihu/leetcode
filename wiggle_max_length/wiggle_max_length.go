@@ -1,24 +1,21 @@
 package wiggle_max_length
 
-type gapStatus int
+type status int8
 
 const (
-	gapStatusBig   gapStatus = 1
-	gapStatusSmall gapStatus = -1
-	gapStatusEqual gapStatus = 0
-	gapStatusInit  gapStatus = 100
+	statusEqual status = 0
+	statusBig   status = 1
+	statusSmall status = 2
+	statusInit  status = 3
 )
 
-func getGapStatus(gap int) gapStatus {
-	switch {
-	case gap > 0:
-		return gapStatusBig
-	case gap == 0:
-		return gapStatusEqual
-	case gap < 0:
-		return gapStatusSmall
-	default:
-		panic("invalid gapStatus")
+func getStatus(cur int) status {
+	if cur > 0 {
+		return statusBig
+	} else if cur < 0 {
+		return statusSmall
+	} else {
+		return statusEqual
 	}
 }
 
@@ -26,16 +23,16 @@ func wiggleMaxLength(nums []int) int {
 	if len(nums) == 0 {
 		return 0
 	}
+
+	preStatus := statusInit
 	count := 1
-	preStatus := gapStatusInit
 	for i := 1; i < len(nums); i++ {
-		curStatus := getGapStatus(nums[i] - nums[i-1])
-		switch curStatus {
-		case preStatus, gapStatusEqual:
+		switch curStatus := getStatus(nums[i] - nums[i-1]); curStatus {
+		case statusEqual, preStatus:
 			continue
 		default:
 			preStatus = curStatus
-			count += 1
+			count++
 		}
 	}
 	return count

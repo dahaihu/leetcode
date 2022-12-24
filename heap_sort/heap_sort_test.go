@@ -10,3 +10,14 @@ func Test_heapSort(t *testing.T) {
 	heapSort(nums)
 	fmt.Println(nums)
 }
+
+func Test_SmallHeap(t *testing.T) {
+	q := newQuque([]int{3, 2, 1})
+	fmt.Println(*q)
+	q.push(10)
+	fmt.Println(*q)
+	for j := 3; j <= 10; j++ {
+		q.push(j)
+		fmt.Println(*q)
+	}
+}

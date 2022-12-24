@@ -78,7 +78,7 @@ func (s *Weighted) notify() {
 			break
 		}
 		waiter := front.Value.(waiter)
-		if s.size-s.cur < waiter.tickets {
+		if s.tickets() < waiter.tickets {
 			break
 		}
 		s.list.Remove(front)

@@ -31,20 +31,26 @@ func reverseList[T any](n *Node[T]) *Node[T] {
 	return pre
 }
 
-func reorderList[T any](head *Node[T]) *Node[T] {
-	if head.Next == nil {
-		return head
-	}
+func splitList[T any](head *Node[T]) (first, second *Node[T]) {
 	slow, fast := head, head
 	for fast.Next != nil && fast.Next.Next != nil {
 		slow = slow.Next
 		fast = fast.Next.Next
 	}
-	next := slow.Next
+	second = slow.Next
 	slow.Next = nil
+	return head, second
+}
 
-	first, second := head, reverseList(next)
-
+func reorderList[T any](head *Node[T]) *Node[T] {
+	if head == nil {
+		return nil
+	}
+	if head.Next == nil {
+		return head
+	}
+	first, second := splitList(head)
+	second = reverseList(second)
 	dummy := &Node[T]{}
 	cur := dummy
 	for second != nil {

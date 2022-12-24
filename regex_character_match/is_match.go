@@ -15,7 +15,8 @@ func isMatch(s string, p string) bool {
 		for j := 1; j <= len(s); j++ {
 			switch p[i-1] {
 			case '*':
-				mark[i][j] = mark[i-2][j] || mark[i-1][j] || ((p[i-2] == s[j-1] || p[i-2] == '.') && mark[i][j-1])
+				mark[i][j] = mark[i-2][j] || mark[i-1][j] ||
+					((p[i-2] == s[j-1] || p[i-2] == '.') && mark[i][j-1])
 			default:
 				mark[i][j] = mark[i-1][j-1] && (p[i-1] == '.' || p[i-1] == s[j-1])
 			}

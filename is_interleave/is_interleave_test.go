@@ -7,5 +7,5 @@ import (
 )
 
 func Test_isInterleave(t *testing.T) {
-	assert.Equal(t, false, isInterleave("", "", "a"))
+	assert.Equal(t, true, isInterleave("a", "b", "ba"))
 }

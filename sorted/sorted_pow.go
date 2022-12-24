@@ -16,20 +16,20 @@ func abs(a int) int {
 }
 
 func sorted2powSorted(nums []int) []int {
-	left, right := 0, len(nums)-1
-	for left < right {
-		if nums[left] >= 0 {
+	right := len(nums) - 1
+	for right > 0 {
+		if nums[0] >= 0 {
 			break
 		}
 		if nums[right] < 0 {
-			reverseRange(nums, left, right)
+			reverseRange(nums, 0, right)
 			break
 		}
-		if abs(nums[left]) < nums[right] {
+		if abs(nums[0]) < nums[right] {
 			right--
 		} else {
-			oldLeft := nums[left]
-			copy(nums[left:right], nums[left+1:right+1])
+			oldLeft := nums[0]
+			copy(nums[:right], nums[1:right+1])
 			nums[right] = oldLeft
 			right--
 		}

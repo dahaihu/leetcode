@@ -1,42 +1,39 @@
 package clusters
 
-func findAncestor(parents map[int]int, target int) int {
-	for parents[target] != target {
-		target = parents[target]
+func ancestor(parents map[int]int, target int) int {
+	p := parents[target]
+	for p != target {
+		target = p
+		p = parents[target]
 	}
-	return target
+	return p
 }
 
-func Cluster(nums [][]int) [][]int {
-	// init
+func cluster(nums [][]int) [][]int {
 	clusters := make(map[int][]int)
 	parents := make(map[int]int)
 	for _, num := range nums {
 		for _, ele := range num {
-			if _, ok := clusters[ele]; !ok {
-				clusters[ele] = []int{ele}
-			}
 			if _, ok := parents[ele]; !ok {
 				parents[ele] = ele
 			}
+			if _, ok := clusters[ele]; !ok {
+				clusters[ele] = []int{ele}
+			}
 		}
 	}
-
-	// union
 	for _, num := range nums {
 		child, parent := num[0], num[1]
-		childAncestor := findAncestor(parents, child)
-		parentAncestor := findAncestor(parents, parent)
-		clusters[parentAncestor] = append(
-			clusters[parentAncestor], clusters[childAncestor]...)
+		childAncestor := ancestor(parents, child)
+		parentAncestor := ancestor(parents, parent)
+		clusters[parentAncestor] = append(clusters[parentAncestor],
+			clusters[childAncestor]...)
 		delete(clusters, childAncestor)
-		parents[childAncestor] = parentAncestor
+		parents[child] = parent
 	}
-
-	// finish
 	var result [][]int
-	for _, c := range clusters {
-		result = append(result, c)
+	for _, cluster := range clusters {
+		result = append(result, cluster)
 	}
 	return result
 }

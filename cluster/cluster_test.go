@@ -6,5 +6,5 @@ import (
 )
 
 func Test_cluster(t *testing.T) {
-	fmt.Println(Cluster([][]int{{1, 2}, {3, 4}, {1, 3}}))
+	fmt.Println(cluster([][]int{{1, 2}, {3, 4}}))
 }

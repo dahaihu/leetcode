@@ -9,16 +9,17 @@ type call struct {
 }
 
 type Group struct {
-	callers map[string]*call
-	m       sync.Mutex
+	calls map[string]*call
+	m     sync.Mutex
 }
 
-func (g *Group) Do(name string, f func() (interface{}, error)) (interface{}, error) {
+func (g *Group) Do(key string, f func() (interface{}, error)) (interface{}, error) {
 	g.m.Lock()
-	if g.callers == nil {
-		g.callers = make(map[string]*call)
+
+	if g.calls == nil {
+		g.calls = make(map[string]*call)
 	}
-	c, ok := g.callers[name]
+	c, ok := g.calls[key]
 	if ok {
 		g.m.Unlock()
 		c.wg.Wait()
@@ -26,14 +27,14 @@ func (g *Group) Do(name string, f func() (interface{}, error)) (interface{}, err
 	}
 	c = new(call)
 	c.wg.Add(1)
-	g.callers[name] = c
+	g.calls[key] = c
 	g.m.Unlock()
 
 	c.val, c.err = f()
 	c.wg.Done()
 
 	g.m.Lock()
-	delete(g.callers, name)
+	delete(g.calls, key)
 	g.m.Unlock()
 
 	return c.val, c.err

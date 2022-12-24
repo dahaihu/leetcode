@@ -3,7 +3,7 @@ package countdigitone
 func countDigitOne(n int) int {
 	count, cur := 0, 1
 	for cur <= n {
-		left, val, right := n/(10*cur), (n/cur)%10, n%cur
+		left, val, right := n/(cur*10), (n/cur)%10, n%cur
 		switch {
 		case val == 0:
 			count += left * cur
