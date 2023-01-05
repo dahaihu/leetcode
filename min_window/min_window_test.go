@@ -6,6 +6,5 @@ import (
 )
 
 func Test_minWindow(t *testing.T) {
-	fmt.Println(minWindow("ADOBECODEBANC",
-		"ABC"))
+	fmt.Println(minWindow("ADOBECODEBANC", "ABC"))
 }
