@@ -1,10 +1,11 @@
 package rob
 
-func getArrayIdx(nums []int, idx, val int) int {
-	if idx >= 0 && idx < len(nums) {
-		return nums[idx]
+import "fmt"
+
+func _assertTruef(v bool, f string, fields ...interface{}) {
+	if !v {
+		panic(fmt.Errorf(f, fields...))
 	}
-	return val
 }
 
 func max(a, b int) int {
@@ -15,17 +16,15 @@ func max(a, b int) int {
 }
 
 func rob(nums []int) int {
-	var result int
-	mark := make([]int, 0, len(nums))
-	for i := 0; i < len(nums); i++ {
-		cur := max(
-			nums[i]+getArrayIdx(mark, i-2, 0),
-			getArrayIdx(mark, i-1, 0),
-		)
-		if cur > result {
-			result = cur
+	_assertTruef(len(nums) != 0, "empty input")
+	pre, prepre := 0, 0
+	var out int
+	for _, num := range nums {
+		cur := max(num+prepre, pre)
+		if cur > out {
+			out = cur
 		}
-		mark = append(mark, cur)
+		pre, prepre = cur, pre
 	}
-	return result
+	return out
 }
