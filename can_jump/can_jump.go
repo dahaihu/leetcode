@@ -6,16 +6,16 @@ func canJump(nums []int) bool {
 	if len(nums) == 0 {
 		return true
 	}
-	margin := nums[0]
-	for i := 1; i < len(nums); i++ {
-		if i > margin {
+	margin := 0
+	for idx, num := range nums {
+		if idx > margin {
 			return false
 		}
-		if margin >= len(nums) {
-			return true
-		}
-		if next := i + nums[i]; next > margin {
+		if next := idx + num; next > margin {
 			margin = next
+		}
+		if margin >= len(nums)-1 {
+			return true
 		}
 	}
 	return true
@@ -26,18 +26,18 @@ func canJump2(nums []int) int {
 	var count int
 	for idx, num := range nums {
 		if idx > end {
-			panic(fmt.Errorf("invalid input not reachable idx[%d] in val %+v", idx, nums))
-		}
-		if curNext := idx + num; curNext > next {
-			next = curNext
+			panic(fmt.Errorf("no reachable idx[%d] in nums[%+v]", idx, nums))
 		}
 		if idx == len(nums)-1 {
 			return count
 		}
+		if curNext := idx + num; curNext > next {
+			next = curNext
+		}
 		if idx == end {
-			count++
 			end = next
+			count++
 		}
 	}
-	panic("invalid input")
+	panic("not reachable")
 }
