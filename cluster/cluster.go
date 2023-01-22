@@ -1,39 +1,44 @@
 package clusters
 
 func ancestor(parents map[int]int, target int) int {
-	p := parents[target]
-	for p != target {
-		target = p
-		p = parents[target]
+	for {
+		parent := parents[target]
+		if parent == target {
+			return parent
+		}
+		target = parent
 	}
-	return p
 }
 
 func cluster(nums [][]int) [][]int {
 	clusters := make(map[int][]int)
 	parents := make(map[int]int)
 	for _, num := range nums {
-		for _, ele := range num {
-			if _, ok := parents[ele]; !ok {
-				parents[ele] = ele
+		for _, node := range num {
+			if _, ok := parents[node]; !ok {
+				parents[node] = node
 			}
-			if _, ok := clusters[ele]; !ok {
-				clusters[ele] = []int{ele}
+			if _, ok := clusters[node]; !ok {
+				clusters[node] = []int{node}
 			}
 		}
 	}
+
 	for _, num := range nums {
 		child, parent := num[0], num[1]
 		childAncestor := ancestor(parents, child)
 		parentAncestor := ancestor(parents, parent)
-		clusters[parentAncestor] = append(clusters[parentAncestor],
-			clusters[childAncestor]...)
-		delete(clusters, childAncestor)
-		parents[child] = parent
+		if childAncestor != parentAncestor {
+			clusters[parentAncestor] = append(
+				clusters[parentAncestor],
+				clusters[childAncestor]...)
+			delete(clusters, childAncestor)
+			parents[childAncestor] = parentAncestor
+		}
 	}
-	var result [][]int
+	out := make([][]int, 0)
 	for _, cluster := range clusters {
-		result = append(result, cluster)
+		out = append(out, cluster)
 	}
-	return result
+	return out
 }

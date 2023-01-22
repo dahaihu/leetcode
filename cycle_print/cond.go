@@ -24,18 +24,21 @@ func CondCyclePrint(workers int, target int) {
 
 			loop := true
 			for loop {
-				cond.L.Lock()
-				for val%workers != i {
-					cond.Wait()
-				}
-				if val <= target {
-					fmt.Printf("worker %d print %d\n", i, val)
-				} else {
-					loop = false
-				}
-				val += 1
-				cond.Broadcast()
-				cond.L.Unlock()
+				func() {
+					cond.L.Lock()
+					defer cond.L.Unlock()
+
+					for val%workers != i {
+						cond.Wait()
+					}
+					if val <= target {
+						fmt.Printf("worker %d print %d\n", i, val)
+					} else {
+						loop = false
+					}
+					val += 1
+					cond.Broadcast()
+				}()
 			}
 		}()
 	}

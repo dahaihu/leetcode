@@ -26,20 +26,20 @@ package break_num
 
 func breakNum(ticks []int) int {
 	var times int
-	nextTick := ticks[len(ticks)-1]
+	next := ticks[len(ticks)-1]
 	for i := len(ticks) - 2; i >= 0; i-- {
-		curTick := ticks[i]
-		if curTick <= nextTick {
-			nextTick = curTick
+		cur := ticks[i]
+		if cur <= next {
+			next = cur
 			continue
 		}
-		division, remainder := curTick/nextTick, curTick%nextTick
+		divided, remainder := cur/next, cur%next
 		if remainder == 0 {
-			times += division - 1
+			times += divided - 1
 			continue
 		}
-		times += division
-		nextTick = curTick / (division + 1)
+		times += divided
+		next = cur / (divided + 1)
 	}
 	return times
 }

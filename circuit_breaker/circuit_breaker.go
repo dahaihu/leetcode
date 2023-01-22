@@ -7,12 +7,18 @@ import (
 	"time"
 )
 
+// station change
+// closed when error increase to threshold open
+// open timeout to half open
+// halfopen when success increase threshold closed
 var ErrorBreakerOpen = errors.New("circuit breaker is open")
 
+type state uint32
+
 const (
-	closed uint32 = iota
+	closed state = iota
 	open
-	halfOpen
+	halfopen
 )
 
 type Breaker struct {
@@ -22,28 +28,30 @@ type Breaker struct {
 	successThreshold int
 	timeout          time.Duration
 	lock             sync.Mutex
-	state            uint32
+	state            atomic.Value
 	lastError        time.Time
 }
 
 func New(errorThreshold, successThreshold int, timeout time.Duration) *Breaker {
+	var state atomic.Value
+	state.Store(closed)
 	return &Breaker{
 		errorThreshold:   errorThreshold,
 		successThreshold: successThreshold,
 		timeout:          timeout,
-		state:            closed,
+		state:            state,
 	}
 }
 
 func (b *Breaker) Run(work func() error) error {
-	status := atomic.LoadUint32(&b.state)
+	status := b.state.Load().(state)
 	if status == open {
 		return ErrorBreakerOpen
 	}
 	return b.doWork(status, work)
 }
 
-func (b *Breaker) doWork(state uint32, work func() error) error {
+func (b *Breaker) doWork(state state, work func() error) error {
 	var panicValue interface{}
 
 	result := func() error {
@@ -65,10 +73,10 @@ func (b *Breaker) doWork(state uint32, work func() error) error {
 	return result
 }
 
-func (b *Breaker) changeState(state uint32) {
+func (b *Breaker) changeState(state state) {
 	b.errors = 0
 	b.successes = 0
-	atomic.StoreUint32(&b.state, state)
+	b.state.Store(state)
 }
 
 func (b *Breaker) closeBreaker() {
@@ -81,7 +89,7 @@ func (b *Breaker) openBreaker() {
 		time.Sleep(b.timeout)
 		b.lock.Lock()
 		defer b.lock.Unlock()
-		b.changeState(halfOpen)
+		b.changeState(halfopen)
 	}()
 }
 
@@ -90,14 +98,14 @@ func (b *Breaker) processResult(result error, panicValue interface{}) {
 	defer b.lock.Unlock()
 
 	if result == nil && panicValue == nil {
-		if b.state == halfOpen {
+		if state := b.state.Load().(state); state == halfopen {
 			b.successes++
 			if b.successes == b.successThreshold {
 				b.closeBreaker()
 			}
 		}
 	} else {
-		switch b.state {
+		switch state := b.state.Load().(state); state {
 		case closed:
 			if expire := b.lastError.Add(b.timeout); time.Now().After(expire) {
 				b.errors = 1
@@ -110,7 +118,7 @@ func (b *Breaker) processResult(result error, panicValue interface{}) {
 			} else {
 				b.lastError = time.Now()
 			}
-		case halfOpen:
+		case halfopen:
 			b.openBreaker()
 		}
 	}

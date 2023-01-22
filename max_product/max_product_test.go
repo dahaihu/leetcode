@@ -6,5 +6,5 @@ import (
 )
 
 func Test_maxProduct(t *testing.T) {
-	fmt.Println(maxProduct([]int{2, 3, -2, 4}))
+	fmt.Println(maxProduct([]int{2, -9, -2, 4}))
 }
