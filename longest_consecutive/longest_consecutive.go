@@ -79,29 +79,29 @@ func longestConsecutive1(nums []int) int {
 	if length := len(nums); length <= 1 {
 		return length
 	}
-	mark := make(map[int]struct{})
+	var token struct{}
+	mark := make(map[int]struct{}, len(nums))
 	for _, num := range nums {
-		mark[num] = placeholder
+		mark[num] = token
 	}
-	maxLength := 1
+	var out int = 1
 	for _, num := range nums {
-		_, preExist := mark[num-1]
-		if preExist {
+		if _, preExisted := mark[num-1]; preExisted {
 			continue
 		}
 		length := 1
 		next := num + 1
 		for {
-			_, exist := mark[next]
-			if !exist {
+			_, ok := mark[next]
+			if !ok {
 				break
 			}
 			length++
 			next++
 		}
-		if length >= maxLength {
-			maxLength = length
+		if length > out {
+			out = length
 		}
 	}
-	return maxLength
+	return out
 }

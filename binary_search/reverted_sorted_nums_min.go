@@ -1,6 +1,15 @@
 package binary_search
 
+import "fmt"
+
+func _assertTruef(v bool, f string, fields ...interface{}) {
+	if !v {
+		panic(fmt.Errorf(f, fields...))
+	}
+}
+
 func findMin(nums []int) int {
+	_assertTruef(len(nums) != 0, "empty input")
 	if len(nums) == 1 {
 		return nums[0]
 	}

@@ -4,8 +4,8 @@ func subarraySum(nums []int, target int) [][]int {
 	mark := make(map[int][]int)
 	mark[0] = []int{-1}
 	var (
-		out [][]int
 		sum int
+		out [][]int
 	)
 	for idx, num := range nums {
 		sum += num

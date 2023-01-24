@@ -24,16 +24,15 @@ func min(a, b int) int {
 
 func maxProduct(nums []int) int {
 	_assertTruef(len(nums) != 0, "empty input")
-	preMin, preMax := nums[0], nums[0]
-	out := nums[0]
+	preMax, preMin, out := nums[0], nums[0], nums[0]
 	for i := 1; i < len(nums); i++ {
 		cur := nums[i]
-		curMin := min(cur, min(preMin*cur, preMax*cur))
-		curMax := max(cur, max(preMin*cur, preMax*cur))
+		curMax := max(cur, max(preMax*cur, preMin*cur))
+		curMin := min(cur, min(preMax*cur, preMin*cur))
 		if curMax > out {
 			out = curMax
 		}
-		preMin, preMax = curMin, curMax
+		preMax, preMin = curMax, curMin
 	}
 	return out
 }
