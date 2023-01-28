@@ -12,8 +12,8 @@ type IJob interface {
 // JobWrapper, wraps the real job
 type JobWrapper struct {
 	job     IJob
-	index   atomic.Int64
-	removed atomic.Bool
+	index   int64
+	removed int64
 }
 
 // Priority implements IElement Priority() method
@@ -23,23 +23,22 @@ func (j *JobWrapper) Priority() int64 {
 
 // SetIndex implements IElement SetIndex() method
 func (j *JobWrapper) SetIndex(idx int) {
-	j.index.Store(int64(idx))
+	atomic.StoreInt64(&j.index, int64(idx))
 }
 
 // Index implements IElement Index() method
 func (j *JobWrapper) Index() int {
-	idx := j.index.Load()
-	return int(idx)
+	return int(atomic.LoadInt64(&j.index))
 }
 
 // Remove remove job from priority queue
 func (j *JobWrapper) Remove() {
-	j.removed.Store(true)
+	atomic.StoreInt64(&j.removed, 1)
 }
 
 // Removed, check job is removed from priority queue
 func (j *JobWrapper) Removed() bool {
-	return j.removed.Load()
+	return atomic.LoadInt64(&j.removed) == 1
 }
 
 // NewJobWrapper, create a job from IJob

@@ -7,36 +7,38 @@ func maxThreeAppearTimes(values []string) []string {
 		switch value {
 		case a:
 			ac++
+			continue
 		case b:
 			bc++
+			continue
 		case c:
 			cc++
+			continue
+		}
+		switch {
+		case ac == 0:
+			ac++
+			a = value
+		case bc == 0:
+			bc++
+			b = value
+		case cc == 0:
+			cc++
+			c = value
 		default:
-			switch {
-			case ac == 0:
-				a = value
-				ac = 1
-			case bc == 0:
-				b = value
-				bc = 1
-			case cc == 0:
-				c = value
-				cc = 1
-			default:
-				ac--
-				bc--
-				cc--
-			}
+			ac--
+			bc--
+			cc--
 		}
 	}
-	if a == "" {
-		return []string{}
+	if ac != 0 && bc != 0 && cc != 0 {
+		return []string{a, b, c}
 	}
-	if b == "" {
-		return []string{a}
-	}
-	if c == "" {
+	if ac != 0 && bc != 0 {
 		return []string{a, b}
 	}
-	return []string{a, b, c}
+	if ac != 0 {
+		return []string{a}
+	}
+	return []string{}
 }

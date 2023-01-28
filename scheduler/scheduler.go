@@ -19,7 +19,7 @@ type Scheduler struct {
 	concurrency   chan struct{}
 	duration      time.Duration
 	mutex         sync.Mutex
-	waitingCount  atomic.Int64
+	waitingCount  int64
 }
 
 // NewSchuduler create a scheduler to schedule job
@@ -34,7 +34,8 @@ func NewSchduler(concurrency int, duration time.Duration, now func() int64) *Sch
 		closeChan:   make(chan struct{}),
 		resume:      make(chan struct{}),
 		duration:    duration,
-		now:         now}
+		now:         now,
+	}
 	go s.dispatch()
 	return s
 }
@@ -88,7 +89,7 @@ func (s *Scheduler) Init(jobs ...IJob) {
 
 // PendingJobNum returns the job number which should execute now but block for concurrency limit
 func (s *Scheduler) PendingJobNum() int64 {
-	return s.waitingCount.Load()
+	return atomic.LoadInt64(&s.waitingCount)
 }
 
 func (s *Scheduler) wait(gap int64) (shouldContinue bool) {
@@ -143,8 +144,8 @@ func (s *Scheduler) dispatch() {
 }
 
 func (s *Scheduler) run(job IJob) {
-	s.waitingCount.Add(1)
-	defer s.waitingCount.Add(-1)
+	atomic.AddInt64(&s.waitingCount, 1)
+	defer atomic.AddInt64(&s.waitingCount, -1)
 
 	if s.concurrency != nil {
 		s.concurrency <- token

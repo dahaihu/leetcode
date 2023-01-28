@@ -27,7 +27,7 @@ func Test_scheduleAsTime(t *testing.T) {
 			executeTime: int(executeTime),
 		})
 	}
-	time.Sleep(time.Second * 20)
+	time.Sleep(time.Second * 10)
 }
 
 func Test_stopScheduler(t *testing.T) {
