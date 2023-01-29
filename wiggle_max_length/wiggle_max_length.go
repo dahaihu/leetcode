@@ -9,31 +9,32 @@ const (
 	statusInit  status = 3
 )
 
-func getStatus(cur int) status {
-	if cur > 0 {
-		return statusBig
-	} else if cur < 0 {
-		return statusSmall
-	} else {
+func compareStatus(val int) status {
+	switch {
+	case val == 0:
 		return statusEqual
+	case val > 0:
+		return statusBig
+	case val < 0:
+		return statusSmall
+	default:
+		panic("invalid switch branch")
 	}
 }
 
 func wiggleMaxLength(nums []int) int {
-	if len(nums) == 0 {
-		return 0
+	if length := len(nums); length <= 1 {
+		return length
 	}
-
 	preStatus := statusInit
 	count := 1
 	for i := 1; i < len(nums); i++ {
-		switch curStatus := getStatus(nums[i] - nums[i-1]); curStatus {
-		case statusEqual, preStatus:
+		curStatus := compareStatus(nums[i] - nums[i-1])
+		if curStatus == statusEqual || curStatus == preStatus {
 			continue
-		default:
-			preStatus = curStatus
-			count++
 		}
+		count++
+		preStatus = curStatus
 	}
 	return count
 }
