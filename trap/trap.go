@@ -78,22 +78,24 @@ func min(a, b int) int {
 }
 
 func trapMethod2(height []int) int {
-	leftMax := make([]int, len(height))
-	leftMax[0] = height[0]
+	// 接雨水
+	//
+	left := make([]int, len(height))
+	left[0] = height[0]
 	for i := 1; i < len(height); i++ {
-		leftMax[i] = max(leftMax[i-1], height[i])
+		left[i] = max(left[i-1], height[i])
 	}
 
-	rightMax := make([]int, len(height))
-	rightMax[len(height)-1] = height[len(height)-1]
+	right := make([]int, len(height))
+	right[len(height)-1] = height[len(height)-1]
 	for i := len(height) - 2; i >= 0; i-- {
-		rightMax[i] = max(height[i], rightMax[i+1])
+		right[i] = max(right[i+1], height[i])
 	}
-
 	var waters int
 	for i := 1; i < len(height)-1; i++ {
-		if water := min(leftMax[i-1], rightMax[i+1]) - height[i]; water > 0 {
-			waters += water
+		cur := height[i]
+		if margin := min(left[i-1], right[i+1]); margin > cur {
+			waters += margin - cur
 		}
 	}
 	return waters

@@ -3,7 +3,7 @@ package longest_valid_parentheses
 import (
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_longestValidParentheses(t *testing.T) {

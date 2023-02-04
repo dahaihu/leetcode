@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goodjobtech/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type demoJob struct {

@@ -3,7 +3,7 @@ package find_peak_element
 import (
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_findPeakElement(t *testing.T) {

@@ -3,7 +3,7 @@ package wiggle_max_length
 import (
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_wiggleMaxLength(t *testing.T) {
