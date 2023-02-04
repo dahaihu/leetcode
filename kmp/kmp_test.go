@@ -9,7 +9,7 @@ import (
 
 func Test_buildTable(t *testing.T) {
 	s := "abcdabd"
-	fmt.Println(buildTable(s))
+	fmt.Println(buildJumpTable(s))
 }
 
 func Test_kmp(t *testing.T) {

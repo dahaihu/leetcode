@@ -1,6 +1,6 @@
 package kmp
 
-func buildTable(s string) []int {
+func buildJumpTable(s string) []int {
 	table := make([]int, len(s))
 	table[0] = 1
 	for length := 2; length < len(table); length++ {
@@ -22,7 +22,7 @@ func buildTable(s string) []int {
 }
 
 func kmp(s string, target string) int {
-	table := buildTable(target)
+	jumpTable := buildJumpTable(target)
 	i, j := 0, 0
 	for j < len(s) {
 		if s[j] == target[j-i] {
@@ -35,8 +35,7 @@ func kmp(s string, target string) int {
 				i += 1
 				j += 1
 			} else {
-				jump := table[j-i-1]
-				i += jump
+				i += jumpTable[j-i-1]
 			}
 		}
 	}
