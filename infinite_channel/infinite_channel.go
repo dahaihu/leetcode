@@ -25,7 +25,7 @@ func (i *InfiniteChan) run() {
 		if i.list.Len() == 0 {
 			ele, ok := <-i.In
 			if !ok {
-				goto closed
+				goto end
 			}
 			i.list.PushBack(ele)
 		}
@@ -36,18 +36,19 @@ func (i *InfiniteChan) run() {
 			i.list.Remove(head)
 		case ele, ok := <-i.In:
 			if !ok {
-				goto closed
+				goto flush
 			}
 			i.list.PushBack(ele)
 		}
 	}
 
-closed:
+flush:
 	for i.list.Len() != 0 {
 		front := i.list.Front()
 		i.Out <- front.Value
 		i.list.Remove(front)
 	}
+end:
 	close(i.Out)
 }
 
