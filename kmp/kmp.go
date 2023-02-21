@@ -12,11 +12,7 @@ func buildJumpTable(s string) []int {
 				break
 			}
 		}
-		if maxMatchLength == 0 {
-			table[length-1] = length
-		} else {
-			table[length-1] = length - maxMatchLength
-		}
+		table[length-1] = length - maxMatchLength
 	}
 	return table
 }

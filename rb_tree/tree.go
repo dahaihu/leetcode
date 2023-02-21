@@ -52,11 +52,9 @@ func BuildTree(node INode) (
 	if rightBoxLength > 0 {
 		rightRootIndex := midIndex(rightRootStart, rightRootEnd, false)
 		line1 = append(line1, strings.Repeat("_", rightRootIndex+1))
-		line1 = append(line1, strings.Repeat(" ",
-			rightBoxLength-rightRootIndex+1))
+		line1 = append(line1, strings.Repeat(" ", rightBoxLength-rightRootIndex+1))
 		line2 = append(line2, strings.Repeat(" ", rightRootIndex+1)+"\\")
-		line2 = append(line2, strings.Repeat(" ",
-			rightBoxLength-rightRootIndex))
+		line2 = append(line2, strings.Repeat(" ", rightBoxLength-rightRootIndex))
 		gapSize++
 	}
 	rootEnd = rootStart + rootWidth - 1
